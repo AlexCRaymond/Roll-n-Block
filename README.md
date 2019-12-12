@@ -22,9 +22,10 @@
 * Three.js
 * Physijs
 * WebGL
-* Javascript
-* CSS
 * jQuery
+* HTML
+* CSS
+* Javascript
 
 ## Future Updates:
 
