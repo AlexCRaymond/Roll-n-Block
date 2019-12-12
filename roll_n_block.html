@@ -16,6 +16,7 @@
         <div id="splash-wrapper">
             <h1 id="title" class="linear-title">ROLL'N BLOCK</h1>
             <h2>WELCOME TO ROLL'N' BLOCK! THE GAME THAT'S NOT A GAME. YET.</h2>
+            <h2>YOU GOT 60 SECONDS TO PUSH ALL THE BLOCKS OFF THE CANVAS - BETTER HURRY!</h2>
             <h3>BUTTONS: W S A D </h3>
             <button id="start">LET'S ROLL!</button>
         </div>
@@ -43,18 +44,18 @@
         renderer.setClearColor("#cce0ff")
         renderer.setSize(window.innerWidth,window.innerHeight); 
         document.body.appendChild(renderer.domElement); // create canvas element with render settings
-        
+
         // // MUSIC
-        var listener = new THREE.AudioListener();
-        camera.add( listener );
-        var sound = new THREE.Audio( listener );
-        var audioLoader = new THREE.AudioLoader();
-        audioLoader.load( '/audio/toomanyzooz.mp3', function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop( true );
-            sound.setVolume( 0.5 );
-            sound.play();
-        });
+        // var listener = new THREE.AudioListener();
+        // camera.add( listener );
+        // var sound = new THREE.Audio( listener );
+        // var audioLoader = new THREE.AudioLoader();
+        // audioLoader.load( '/audio/toomanyzooz.mp3', function( buffer ) {
+        //     sound.setBuffer( buffer );
+        //     sound.setLoop( true );
+        //     sound.setVolume( 0.5 );
+        //     sound.play();
+        // });
 
         // AUTO RESIZE WINDOW
         window.addEventListener('resize' , () => { 
@@ -87,6 +88,13 @@
         // TYPE OF CAMERA
         controls = new THREE.TrackballControls( camera, renderer.domElement);
 
+        // TIMER
+        function time(){
+            setInterval(() => {
+                location.reload(), alert('Game over')
+            }, 60000)  
+        }
+
         // ADD PLAYER OBJECT
         function getBox () {
             var geometry = new THREE.SphereGeometry(60, 60, 60) 
@@ -102,6 +110,7 @@
         var geometry = new THREE.BoxGeometry(50, 50, 50) // (radius, width, height) 
         var pressed = {}
         var clock = new THREE.Clock();
+        var timer = 10;
 
         // RANDOMIZING OBJECTS
         for(var i =0; i < 20; i++) {
@@ -200,6 +209,7 @@
             moveCamera();
             moveBox();
             addListeners();
+            time();
         };
 
         render() 

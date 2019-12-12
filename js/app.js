@@ -1,2 +1,3 @@
-const startBtn = document.querySelector('#start');
-const welcomeScreen = document.querySelector('#welcome-screen');
+var startBtn = document.querySelector('#start');
+var welcomeScreen = document.querySelector('#welcome-screen');
+
