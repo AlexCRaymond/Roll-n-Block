@@ -1,7 +1,5 @@
 # Roll'n Block - By Alex Raymond 
 
-## Link to Roll'n Block --- 
-
 ## Description
 * Welcome to Roll'n Block!  The object of the game is to use the W, A, S, D keys to move a ball around and push blocks off a floating canvas. 
 
