@@ -1,0 +1,211 @@
+<!-- THREE THINGS YOU NEED FOR EVERY THREEJS PROJECT - SCENE, CAMERA AND RENDERER -->
+<!-- Deltas = the changing of the x and y coordinates when a user moves a mouse -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ROLL'N BLOCK</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css"
+</head>
+ <body>
+    <section id="welcome-screen">
+    <canvas id="splash-graphic" width="20rem" height="20rem"></canvas>
+        <div id="splash-wrapper">
+            <h1 id="title" class="linear-title">ROLL'N BLOCK</h1>
+            <h2>WELCOME TO ROLL'N' BLOCK! THE GAME THAT'S NOT A GAME. YET.</h2>
+            <h3>BUTTONS: W S A D </h3>
+            <button id="start">LET'S ROLL!</button>
+        </div>
+    </section>
+
+    <script src="js/three.js"></script>
+    <script src="js/app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script> 
+    <script src="js/TrackballControls.js"></script>
+    <script type="text/javascript" src="/js/physi.js"></script>
+    
+    <script>
+    Physijs.scripts.worker = '/js/physijs_worker.js';
+    Physijs.scripts.ammo = '/js/ammo.js';
+
+    // SETTING THE SCENE
+    start.addEventListener('click', init);
+    function init() {
+        welcomeScreen.style.visibility = 'hidden';
+        var scene = new Physijs.Scene();
+        scene.setGravity(new THREE.Vector3(0, -300, 0));
+        var camera = new THREE.PerspectiveCamera(75, 
+        window.innerWidth/window.innerHeight, .1, 10000) // aspect ratio 
+        var renderer = new THREE.WebGLRenderer({antialias: true}); 
+        renderer.setClearColor("#cce0ff")
+        renderer.setSize(window.innerWidth,window.innerHeight); 
+        document.body.appendChild(renderer.domElement); // create canvas element with render settings
+        
+        // // MUSIC
+        var listener = new THREE.AudioListener();
+        camera.add( listener );
+        var sound = new THREE.Audio( listener );
+        var audioLoader = new THREE.AudioLoader();
+        audioLoader.load( '/audio/toomanyzooz.mp3', function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( true );
+            sound.setVolume( 0.5 );
+            sound.play();
+        });
+
+        // AUTO RESIZE WINDOW
+        window.addEventListener('resize' , () => { 
+        renderer.setSize(window.innerWidth, window.innerHeight); 
+        camera.aspect = window.innerWidth / window.innerHeight; // to change the aspect ratio of the browser
+        camera.updateProjectionMatrix(); 
+        });
+
+        // SETTING THE PLANE
+        var loader = new THREE.TextureLoader();
+        var floor = getPlane(loader);
+        function getPlane(loader) {
+            var texture = loader.load('pics/franklin.jpg');
+            texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
+            texture.repeat.set( 10, 10 );
+            var material = new THREE.MeshBasicMaterial({
+            map: texture, side: THREE.DoubleSide
+            });
+            var geometry = new THREE.PlaneGeometry(2000, 2000, 2000, 100);
+            var plane = new Physijs.BoxMesh(geometry, material);
+            plane.position.y = -60;
+            plane.rotation.x = Math.PI / 2;
+            scene.add(plane);
+            return plane;
+        };
+
+        // WEATHER
+        scene.fog = new THREE.FogExp2( 0xcccccc, 0.002 );
+            
+        // TYPE OF CAMERA
+        controls = new THREE.TrackballControls( camera, renderer.domElement);
+
+        // ADD PLAYER OBJECT
+        function getBox () {
+            var geometry = new THREE.SphereGeometry(60, 60, 60) 
+            var boxMaterial = Physijs.createMaterial(
+            new THREE.MeshLambertMaterial({color: 0xF7F7F7}));
+            var box = new Physijs.BoxMesh(geometry, boxMaterial);
+            scene.add(box);
+            return [box];
+        };
+
+        // GLOBAL VARIABLES
+        var material = new THREE.MeshLambertMaterial({color: 0xB1E5F7});
+        var geometry = new THREE.BoxGeometry(50, 50, 50) // (radius, width, height) 
+        var pressed = {}
+        var clock = new THREE.Clock();
+
+        // RANDOMIZING OBJECTS
+        for(var i =0; i < 20; i++) {
+            var box = new Physijs.BoxMesh(geometry, material);
+            box.position.x = (Math.random() - 0.5) * 1000;
+            // box.position.y = (Math.random() - 0.5) * 1000;
+            box.position.z = (Math.random() - 0.5) * 1000;
+            scene.add(box);
+        };
+        
+        // STORING PRESSED KEYS
+        function addListeners() {
+            window.addEventListener('keydown', function(e) {
+                pressed[e.key.toUpperCase()] = true;
+            });
+            window.addEventListener('keyup', function(e) {
+                pressed[e.key.toUpperCase()] = false;
+            });
+        };
+
+        // ATTACH PLAYER OBJECT WITH KEYS
+        var boxData = getBox();
+        var box = boxData[0];
+    
+        // MOVING THE BOX'S POSITION
+        function moveBox() {
+            var delta = clock.getDelta(); // seconds
+            var moveDistance = 200 * delta; // 200 pixels per second
+            var rotateAngle = Math.PI / 2 * delta; // pi/2 radians (90 deg) per sec
+            box.setLinearVelocity(new THREE.Vector3(0, 0, 0));
+            box.setAngularVelocity(new THREE.Vector3(0, 0, 0));
+            box.__dirtyRotation = true;
+            box.__dirtyPosition = true;
+
+            // MOVE FORWARDS/BACKWARDS
+            if ( pressed['W'] ) {
+            box.translateZ( -moveDistance );
+            }
+            if ( pressed['S'] ) {
+            box.translateZ( moveDistance );
+            }
+            // ROTATE LEFT/RIGHT
+            var rotation_matrix = new THREE.Matrix4().identity();
+            if ( pressed['A'] )
+            box.rotateOnAxis(new THREE.Vector3(0,1,0), rotateAngle);
+            if ( pressed['D'] )
+            box.rotateOnAxis(new THREE.Vector3(0,1,0), -rotateAngle);
+        };
+
+        // MOVING THE CAMERA
+        function moveCamera() {
+            var relativeCameraOffset = new THREE.Vector3(0,50,200);
+            var cameraOffset = relativeCameraOffset.applyMatrix4(box.matrixWorld);
+            camera.position.x = cameraOffset.x;
+            camera.position.y = cameraOffset.y;
+            camera.position.z = cameraOffset.z;
+            camera.lookAt(box.position);
+        };
+            
+        // LIGHTING - 1
+        var light = new THREE.PointLight(0xFFFFFF, 1, 1000) // color, intensity, distance 
+        light.position.set(0, 0, 0); 
+        scene.add(light);
+        
+        // LIGHTING - 2
+        var light = new THREE.PointLight(0xFFFFFF, 2, 1000)
+        light.position.set(0, 0, 25); 
+        scene.add(light);
+        
+        // ANIMATION
+        var raycaster = new THREE.Raycaster(); // allows animation with the mouse
+        var mouse = new THREE.Vector2(); // Vector2 uses only x and y
+
+        // function onMouseClick(event) { // this is all in tandem with window.addEventlistener below
+        //     event.preventDefault();
+        //     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        //     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        //     raycaster.setFromCamera(mouse, camera);
+
+        //     var intersects = raycaster.intersectObjects(scene.children, true);
+        //     for (var i = 0; i < intersects.length; i++) {
+        //         intersects[i].object.material.color.set(0xbd2861)
+        //         // Tweening - Short for in-betweening, the process of generating intermediate frames between two images to give the appearance that the first image evolves smoothly into the second image.
+        //         this.tl = new TimelineMax() // a JS sequencing tool acts a container for tweens to control animation. Provides methods to multiple diff aspects of animation
+        //         this.tl.to(intersects[i].object.scale, 1, {x: 2, ease: Expo.easeOut}) // first movement and expansion of box
+        //         this.tl.to(intersects[i].object.scale, .5, {x: .5, ease: Expo.easeOut}) // x is how big the width ends
+        //         this.tl.to(intersects[i].object.position, .5, {z: 5, ease: Expo.easeOut}) // first how fast to end position/second x position on screen
+        //         this.tl.to(intersects[i].object.rotation, .5, {y: Math.PI*.5, ease: Expo.easeOut}, "+=-1.5") // this makes it happen 1.5 seconds before it normally would
+        //     }
+        // }
+        
+        render = function() {
+            scene.simulate();
+            renderer.render( scene, camera);
+            requestAnimationFrame( render );
+            moveCamera();
+            moveBox();
+            addListeners();
+        };
+
+        render() 
+        // window.addEventListener('click', onMouseClick); 
+    };
+     
+    </script>
+ </body>
+</html>
