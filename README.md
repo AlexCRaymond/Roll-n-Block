@@ -5,7 +5,7 @@
 
 ## Getting Started
 
-* Clone the repo
+* Clone the repo.
 * Open the files in an open source editor.
 * Right click on the roll'n_block.html file and click, "Open with Live Server".
 
