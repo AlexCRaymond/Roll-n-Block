@@ -46,16 +46,16 @@
         document.body.appendChild(renderer.domElement); // create canvas element with render settings
 
         // // MUSIC
-        // var listener = new THREE.AudioListener();
-        // camera.add( listener );
-        // var sound = new THREE.Audio( listener );
-        // var audioLoader = new THREE.AudioLoader();
-        // audioLoader.load( '/audio/toomanyzooz.mp3', function( buffer ) {
-        //     sound.setBuffer( buffer );
-        //     sound.setLoop( true );
-        //     sound.setVolume( 0.5 );
-        //     sound.play();
-        // });
+        var listener = new THREE.AudioListener();
+        camera.add( listener );
+        var sound = new THREE.Audio( listener );
+        var audioLoader = new THREE.AudioLoader();
+        audioLoader.load( '/audio/toomanyzooz.mp3', function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( true );
+            sound.setVolume( 0.5 );
+            sound.play();
+        });
 
         // AUTO RESIZE WINDOW
         window.addEventListener('resize' , () => { 
